@@ -1,48 +1,36 @@
-# Git
-.git
+# Development
+**/__pycache__      # Ignore in all directories
+**/*.pyc
+.venv/
+.env
+.env.*
+!.env.example       # Keep example file
+
+# Version Control
+.git/
 .gitignore
 .gitattributes
 
 # Docker
-docker/
 Dockerfile
-docker-compose.yml
-.docker
-.dockerignore
-
-# Python
-**/__pycache__
-**/*.pyc
-**/*.pyo
-**/*.pyd
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-.pytest_cache/
-.env
-.env.*
-!.env.example
+docker-compose*.yml
+.docker/
 
 # IDE
 .idea/
 .vscode/
-*.swp
-*.swo
 
-# Project specific
-media/
-static/
-staticfiles/
-postgres-data/
-logs/
+# Testing
+tests/
+.coverage
+htmlcov/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Data
+media/              # User uploads
+postgres-data/      # Database files
+logs/               # Log files
