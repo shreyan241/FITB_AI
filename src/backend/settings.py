@@ -93,6 +93,27 @@ DATABASES = {
     }
 }
 
+
+# AWS S3 Settings
+AWS_ACCESS_KEY_ID = env_utils.AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY = env_utils.AWS_SECRET_ACCESS_KEY
+AWS_STORAGE_BUCKET_NAME = env_utils.AWS_STORAGE_BUCKET_NAME
+AWS_S3_REGION_NAME = env_utils.AWS_S3_REGION_NAME
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = 'private'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_VERIFY = True
+
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    'resumes': {
+        'BACKEND': 'profiles.utils.resume_storage.ResumeStorage',
+    }
+}
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 

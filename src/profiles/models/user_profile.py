@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from profiles.utils.validators import FileValidator
+from profiles.utils.resume_storage import ResumeStorage
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -12,7 +13,8 @@ class UserProfile(models.Model):
     country = models.CharField(max_length=100, blank=True)
     # Resume upload
     resume = models.FileField(
-        upload_to='resumes/',
+        upload_to='',
+        storage=ResumeStorage(),
         null=True,
         blank=True,
         # Add validators for file type and size
@@ -26,6 +28,17 @@ class UserProfile(models.Model):
     skills = models.ManyToManyField('Skill', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    
+    def get_resume_url(self):
+        if self.resume:
+            return self.resume.storage.url(self.resume.name)
+        return None
+    
+    def delete_resume(self):
+        if self.resume:
+            self.resume.delete(save=False)
+            self.save()
     
     class Meta:
         ordering = ['-created_at']
