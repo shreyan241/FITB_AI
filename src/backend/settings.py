@@ -32,15 +32,21 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    # Your apps
-    'profiles.apps.ProfilesConfig'
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    
+    # Third party apps
+    'rest_framework',  # Add this
+    'storages',       # For S3
+    
+    # Local apps
+    'profiles.apps.ProfilesConfig',
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

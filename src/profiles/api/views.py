@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .forms import UserRegistrationForm, UserProfileForm
+from profiles.forms import UserRegistrationForm, UserProfileForm
 from django.contrib import messages
 from backend.logging_config import logger
 

@@ -12,7 +12,23 @@ fi
 
 # Wait for PostgreSQL to be ready
 echo "⏳ Waiting for PostgreSQL to be ready..."
-sleep 5  # Give PostgreSQL time to initialize
+sleep 10  # Give PostgreSQL time to initialize
+
+# Test database connection
+echo "🔄 Testing database connection..."
+max_attempts=30
+counter=0
+while ! docker exec fitb_ai_db pg_isready -U fitb_ai_user -d fitb_ai_db > /dev/null 2>&1; do
+    counter=$((counter + 1))
+    if [ $counter -eq $max_attempts ]; then
+        echo "❌ Database failed to start"
+        exit 1
+    fi
+    echo "Waiting for database... ($counter/$max_attempts)"
+    sleep 1
+done
+
+echo "✅ PostgreSQL is running and accepting connections"
 
 # Check if container is running
 if ! docker ps | grep -q fitb_ai_db; then
