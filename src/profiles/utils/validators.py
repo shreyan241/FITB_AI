@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
 from django.template.defaultfilters import filesizeformat
+import magic
 
 @deconstructible
 class FileValidator:
@@ -22,9 +23,20 @@ class FileValidator:
                 f'Current file size is {filesizeformat(data.size)}.'
             )
 
-        # Validate content type using UploadedFile's content_type attribute
+        # Validate content type
         if self.content_types:
-            content_type = data.content_type  # Access content_type directly
+            # Handle both UploadedFile and FieldFile
+            if hasattr(data, 'content_type'):
+                content_type = data.content_type
+            else:
+                # Use python-magic to detect file type
+                try:
+                    mime = magic.Magic(mime=True)
+                    content_type = mime.from_buffer(data.read(1024))
+                    data.seek(0)  # Reset file pointer
+                except Exception as e:
+                    raise ValidationError(f'Could not determine file type: {str(e)}')
+
             if content_type not in self.content_types:
                 raise ValidationError(
                     f'File type ({content_type}) is not supported. '

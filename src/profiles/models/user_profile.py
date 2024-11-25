@@ -20,9 +20,13 @@ class UserProfile(models.Model):
         # Add validators for file type and size
         validators=[FileValidator(
             max_size=1024 * 1024 * 5,  # 5MB max
-            content_types=('application/pdf', 'application/msword', 'text/plain', 
-                           'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-        )]
+            content_types=(
+                'application/pdf',                # PDF
+                'application/msword',             # DOC
+                'text/plain',                     # TXT
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'  # DOCX
+            )
+            )]
     )
     # Skills
     skills = models.ManyToManyField('Skill', blank=True)
