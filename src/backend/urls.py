@@ -15,13 +15,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+from ninja import NinjaAPI
+from profiles.api.endpoints.resume import router as resume_router
+from profiles.api.endpoints.profile import router as profile_router
+
+
+api = NinjaAPI()
+
+# Add routers
+api.add_router("/profiles/", profile_router)
+api.add_router("/resumes/", resume_router)
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path('api/', include('profiles.api.urls'))
+    path('admin/', admin.site.urls),
+    path("api/", api.urls),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -24,12 +24,31 @@ echo "✅ PostgreSQL is running"
 # Navigate to Django project directory
 cd ../src
 
+# Make migrations for any model changes
+echo "🔄 Checking for model changes..."
+uv run manage.py makemigrations
+if [ $? -ne 0 ]; then
+    echo "❌ Failed to make migrations"
+    exit 1
+fi
+echo "✅ Migrations created successfully"
+
 # Apply any pending migrations
-echo "🔄 Applying any pending migrations..."
+echo "🔄 Applying migrations..."
 uv run manage.py migrate
 if [ $? -ne 0 ]; then
     echo "❌ Failed to apply migrations"
     exit 1
 fi
+echo "✅ Database migrations complete"
 
-echo "✅ Startup complete! You can now start the application" 
+# Collect static files if needed
+echo "🔄 Collecting static files..."
+uv run manage.py collectstatic --noinput
+if [ $? -ne 0 ]; then
+    echo "❌ Failed to collect static files"
+    exit 1
+fi
+echo "✅ Static files collected"
+
+echo "✅ Startup complete! You can now start the application"

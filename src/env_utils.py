@@ -8,7 +8,6 @@ env_path = BASE_DIR / '.env'  # Look for .env in project root
 
 # Load environment variables
 load_dotenv(dotenv_path=env_path, override=True)
-print(f"Loading environment variables from: {env_path}")
 
 # Database settings
 DB_NAME = os.getenv('DB_NAME')

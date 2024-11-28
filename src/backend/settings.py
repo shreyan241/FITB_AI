@@ -38,11 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
     # Third party apps
-    'rest_framework',  # Add this
     'storages',       # For S3
-    
     # Local apps
     'profiles.apps.ProfilesConfig',
 ]
@@ -112,7 +109,7 @@ STORAGES = {
         'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
     },
     'resumes': {
-        'BACKEND': 'profiles.utils.resume_storage.ResumeStorage',
+        'BACKEND': 'profiles.utils.storage.resume_storage.ResumeStorage',
     }
 }
 
