@@ -21,13 +21,14 @@ from django.conf.urls.static import static
 from ninja import NinjaAPI
 from profiles.api.endpoints.resume import router as resume_router
 from profiles.api.endpoints.profile import router as profile_router
-
+from profiles.api.endpoints.auth import router as auth_router
 
 api = NinjaAPI()
 
 # Add routers
 api.add_router("/profiles/", profile_router)
-api.add_router("/resumes/", resume_router)
+api.add_router("/profiles/", resume_router)
+api.add_router("/auth/", auth_router)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

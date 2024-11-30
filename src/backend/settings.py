@@ -161,3 +161,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Redis Settings
+REDIS_HOST=env_utils.REDIS_HOST
+REDIS_PORT=env_utils.REDIS_PORT
+REDIS_DB=env_utils.REDIS_DB
+
+# Token Settings
+TOKEN_EXPIRY=env_utils.TOKEN_EXPIRY
+REFRESH_TOKEN_EXPIRY=env_utils.REFRESH_TOKEN_EXPIRY

@@ -4,9 +4,11 @@ from datetime import datetime
 from typing import Optional
 from profiles.models.resume import MAX_TITLE_LENGTH
 
+
 # File validation constants
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 ALLOWED_EXTENSIONS = {'.pdf', '.doc', '.docx', '.txt'}
+
 
 class ResumeBase(Schema):
     """Base schema with common fields"""
@@ -15,9 +17,11 @@ class ResumeBase(Schema):
     class Config:
         extra = "forbid"
 
+
 class ResumeCreate(ResumeBase):
     """Schema for creating a resume"""
     pass
+
 
 class ResumeUpdate(Schema):
     """Schema for updating a resume"""
@@ -26,6 +30,7 @@ class ResumeUpdate(Schema):
 
     class Config:
         extra = "forbid"
+
 
 class ResumeResponse(ResumeBase):
     """Schema for resume responses"""
