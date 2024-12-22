@@ -21,14 +21,23 @@ from django.conf.urls.static import static
 from ninja import NinjaAPI
 from profiles.api.endpoints.resume import router as resume_router
 from profiles.api.endpoints.profile import router as profile_router
-from profiles.api.endpoints.auth import router as auth_router
 
-api = NinjaAPI()
+api = NinjaAPI(
+    title="FITB AI API",
+    version="1.0.0",
+    description="""
+    FITB AI Backend API
+    
+    To authenticate:
+    1. First login at /admin/
+    2. Then you can use the API endpoints
+    """,
+    csrf=False  # Disabled CSRF for testing
+)
 
 # Add routers
 api.add_router("/profiles/", profile_router)
 api.add_router("/profiles/", resume_router)
-api.add_router("/auth/", auth_router)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

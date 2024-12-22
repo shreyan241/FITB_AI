@@ -25,12 +25,3 @@ AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
 # Django settings
 DJANGO_SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DJANGO_DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
-
-# Redis Settings
-REDIS_HOST=os.getenv('REDIS_HOST')
-REDIS_PORT=os.getenv('REDIS_PORT')
-REDIS_DB=0
-
-# Token Settings
-TOKEN_EXPIRY=int(eval(os.getenv('TOKEN_EXPIRY')))
-REFRESH_TOKEN_EXPIRY=int(eval(os.getenv('REFRESH_TOKEN_EXPIRY')))

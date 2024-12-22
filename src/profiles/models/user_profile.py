@@ -1,8 +1,11 @@
-from django.db import models, transaction
+from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import EmailValidator
+
 class UserProfile(models.Model):
+    # Link to Django User
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    
     # Personal Details
     first_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100, blank=True)

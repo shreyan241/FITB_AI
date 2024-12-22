@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-
+from profiles.models import UserProfile
 class WorkExperience(models.Model):
     EMPLOYMENT_TYPE_CHOICES = [
         ('Full-time', 'Full-time'),
@@ -14,7 +14,7 @@ class WorkExperience(models.Model):
         ('Other', 'Other')
     ]
     
-    user_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE, related_name='work_experiences')
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='work_experiences')
     company = models.CharField(max_length=255)
     position_title = models.CharField(max_length=255)
     employment_type = models.CharField(max_length=50, choices=EMPLOYMENT_TYPE_CHOICES)

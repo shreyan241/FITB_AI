@@ -12,7 +12,14 @@ fi
 
 # Wait for PostgreSQL to be ready
 echo "⏳ Waiting for PostgreSQL to be ready..."
-sleep 5
+for i in {1..30}; do
+    if docker exec fitb_ai_db pg_isready > /dev/null 2>&1; then
+        echo "✅ PostgreSQL is ready"
+        break
+    fi
+    echo "Waiting... ($i/30)"
+    sleep 2
+done
 
 # Check if container is running
 if ! docker ps | grep -q fitb_ai_db; then

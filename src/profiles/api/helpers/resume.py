@@ -52,17 +52,19 @@ def generate_resume_s3_key(profile, title, file):
     return s3_key
 
 
-def get_existing_resume(profile, title):
+async def get_existing_resume(profile, title):
     """Get existing resume by title"""
     try:
-        return Resume.objects.get(user_profile=profile, title=title)
+        get_resume = sync_to_async(Resume.objects.get)
+        return await get_resume(user_profile=profile, title=title)
     except Resume.DoesNotExist:
         return None
 
 
-def check_resume_limit(profile):
+async def check_resume_limit(profile):
     """Check if user has reached resume limit"""
-    count = Resume.objects.filter(user_profile=profile).count()
+    get_count = sync_to_async(Resume.objects.filter(user_profile=profile).count)
+    count = await get_count()
     if count >= MAX_RESUMES_PER_USER:
         raise ValidationError(
             f"Maximum {MAX_RESUMES_PER_USER} resumes allowed. "
@@ -74,17 +76,9 @@ def check_resume_limit(profile):
 def create_or_update_resume(profile, title, file):
     """Create new resume or update existing one"""
     with transaction.atomic():
-        # Get existing resumes
-        existing_resume = get_existing_resume(profile, title)
-        # If no existing resume, check limit
-        if not existing_resume:
-            check_resume_limit(profile)
         # Generate new S3 key
         s3_key = generate_resume_s3_key(profile, title, file)
-        # Delete existing resume if updating
-        if existing_resume:
-            logger.info(f"Updating existing resume: {existing_resume.id}")
-            existing_resume.delete()
+        
         # Create new resume
         resume = Resume.objects.create(
             user_profile=profile,
@@ -96,7 +90,7 @@ def create_or_update_resume(profile, title, file):
         file.instance = resume
         resume.file = file
         resume.save()
-        logger.info(f"{'Updated' if existing_resume else 'Created'} resume: {resume.id}")
+        logger.info(f"Created resume: {resume.id}")
         return resume
     
 

@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from profiles.utils.storage.resume_storage import ResumeStorage
+from profiles.models import UserProfile
 from profiles.utils.logger.logging_config import logger
 
 # Constants
@@ -11,7 +12,7 @@ MAX_RESUMES_PER_USER = 3
 
 class Resume(models.Model):
     user_profile = models.ForeignKey(
-        'UserProfile',
+        UserProfile,
         on_delete=models.CASCADE,
         related_name='resumes'
     )

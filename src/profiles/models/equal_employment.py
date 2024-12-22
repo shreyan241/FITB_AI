@@ -1,4 +1,5 @@
 from django.db import models
+from profiles.models import UserProfile
 
 class EqualEmploymentData(models.Model):
     ETHNICITY_CHOICES = [
@@ -29,7 +30,7 @@ class EqualEmploymentData(models.Model):
         ('Decline to self-identify', 'Decline to self-identify')
     ]
     
-    user_profile = models.OneToOneField('UserProfile', on_delete=models.CASCADE, related_name='equal_employment_data')
+    user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='equal_employment_data')
     
     # Demographics
     ethnicity = models.CharField(max_length=100, choices=ETHNICITY_CHOICES)

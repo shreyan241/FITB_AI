@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-
+from profiles.models import UserProfile
 class Education(models.Model):
     DEGREE_CHOICES = [
         ("High School", "High School"),
@@ -16,7 +16,7 @@ class Education(models.Model):
         ("Other", "Other")
     ]
     
-    user_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE, related_name='education')
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='education')
     school_name = models.CharField(max_length=255)
     degree_type = models.CharField(max_length=50, choices=DEGREE_CHOICES)
     major = models.CharField(max_length=255, blank=True)

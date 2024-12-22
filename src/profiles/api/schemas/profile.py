@@ -13,6 +13,7 @@ class ProfileBase(Schema):
     city: Optional[str] = None
     state: Optional[str] = None
     country: Optional[str] = None
+
     class Config:
         extra = "forbid"
 
