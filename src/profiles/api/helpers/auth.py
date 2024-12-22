@@ -41,4 +41,26 @@ async def check_auth_and_access(request, profile_id: int):
         logger.warning(f"Unauthorized access attempt to profile {profile_id} by user {request.user.id}")
         raise PermissionDenied("You don't have permission to access this profile")
     
-    return profile 
+    return profile
+
+async def check_auth_and_staff(request):
+    """
+    Check if user is authenticated and is staff.
+    Raises PermissionDenied if not authenticated or not staff.
+    
+    Args:
+        request: The HTTP request object
+        
+    Raises:
+        PermissionDenied: If user is not authenticated or not staff
+    """
+    # Check authentication
+    is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
+    if not is_authenticated:
+        raise PermissionDenied("Authentication required")
+    
+    # Check staff status
+    is_staff = await sync_to_async(lambda: request.user.is_staff)()
+    if not is_staff:
+        logger.warning(f"Non-staff access attempt by user {request.user.id}")
+        raise PermissionDenied("Staff access required") 

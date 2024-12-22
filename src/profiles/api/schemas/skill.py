@@ -1,10 +1,6 @@
 from typing import Optional, List
 from ninja import ModelSchema, Schema
 from profiles.models.skill import Skill
-from better_profanity import profanity
-
-# Configure profanity filter
-profanity.load_censor_words()
 
 class SkillBase(Schema):
     """Base schema for skill with common fields"""
@@ -18,11 +14,6 @@ class SkillBase(Schema):
             raise ValueError("Skill name cannot be empty")
         if len(name) > 100:
             raise ValueError("Skill name too long (max 100 characters)")
-        
-        # Check for offensive content
-        if profanity.contains_profanity(name):
-            raise ValueError("Skill name contains inappropriate content")
-            
         return {**data, 'name': name}  # Return normalized name
 
 class SkillCreate(SkillBase):
@@ -47,4 +38,4 @@ class SkillResponse(ModelSchema):
 
 class ProfileSkillsUpdate(Schema):
     """Schema for updating a profile's skills"""
-    skill_ids: List[int] 
+    skill_ids: List[int]

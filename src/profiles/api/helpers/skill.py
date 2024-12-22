@@ -2,9 +2,18 @@ from typing import List
 from django.db import IntegrityError
 from profiles.models.skill import Skill
 from profiles.models.user_profile import UserProfile
+from better_profanity import profanity
+from django.core.exceptions import ValidationError
+
+# Configure profanity filter
+profanity.load_censor_words()
 
 async def create_skill(name: str) -> Skill:
     """Create a new skill, handling duplicates gracefully"""
+    # Validate name for offensive content
+    if profanity.contains_profanity(name.strip()):
+        raise ValidationError("Skill name contains inappropriate content")
+        
     try:
         return await Skill.objects.acreate(name=name.strip())
     except IntegrityError:
@@ -13,6 +22,10 @@ async def create_skill(name: str) -> Skill:
 
 async def update_skill(skill_id: int, name: str) -> Skill:
     """Update a skill's name"""
+    # Validate name for offensive content
+    if profanity.contains_profanity(name.strip()):
+        raise ValidationError("Skill name contains inappropriate content")
+        
     skill = await Skill.objects.aget(id=skill_id)
     skill.name = name.strip()
     try:

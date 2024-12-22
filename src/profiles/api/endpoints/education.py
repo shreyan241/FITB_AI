@@ -18,7 +18,7 @@ from profiles.utils.logger.logging_config import logger
 from profiles.api.helpers.auth import check_auth_and_access
 from asgiref.sync import sync_to_async
 
-router = Router()
+router = Router(tags=["education"])
 
 @router.get("/{profile_id}/education", response=List[EducationResponse])
 async def list_education(request, profile_id: int):
