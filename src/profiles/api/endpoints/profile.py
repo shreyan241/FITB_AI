@@ -1,12 +1,10 @@
 from ninja import Router
-from ninja.security import HttpBearer, django_auth
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError, PermissionDenied
 from profiles.models import UserProfile
 from profiles.api.schemas.profile import ProfileCreate, ProfileUpdate, ProfileResponse
 from profiles.utils.logger.logging_config import logger
 from asgiref.sync import sync_to_async
-from django.contrib.auth.models import AnonymousUser
 
 router = Router()
 

@@ -29,6 +29,7 @@ class Resume(models.Model):
         null=True
     )
     is_default = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -48,7 +49,7 @@ class Resume(models.Model):
         ]
 
     def clean(self):
-        """Validate resume count and title uniqueness"""
+        """Validate resume count"""
         if not self.pk:  # Only check on creation
             # Check resume count
             resume_count = Resume.objects.filter(user_profile=self.user_profile).count()
@@ -56,10 +57,6 @@ class Resume(models.Model):
                 raise ValidationError(
                     _(f"Maximum of {MAX_RESUMES_PER_USER} resumes allowed. Please delete an existing resume first.")
                 )
-            
-            # Check title uniqueness
-            if Resume.objects.filter(user_profile=self.user_profile, title=self.title).exists():
-                raise ValidationError(_("A resume with this title already exists."))
 
     def save(self, *args, **kwargs):
         """Save resume and handle default status"""
@@ -74,15 +71,34 @@ class Resume(models.Model):
     def delete(self, *args, **kwargs):
         """Delete resume and its S3 file"""
         try:
+            # Store if this was the default resume
+            was_default = self.is_default
+            
+            # Delete the file
             if self.file:
                 logger.info(f"Deleting S3 file for resume: {self.s3_key}")
                 self.file.delete(save=False)
+            
+            # Delete the database record
+            super().delete(*args, **kwargs)
+            logger.info(f"Deleted resume record: {self.id}")
+            
+            # If this was the default resume, set a new one
+            if was_default:
+                logger.info("Deleted resume was default, updating...")
+                latest_resume = Resume.objects.filter(
+                    user_profile=self.user_profile
+                ).order_by('-updated_at').first()
+                
+                if latest_resume:
+                    latest_resume.is_default = True
+                    latest_resume.save()
+                    logger.info(f"Set resume {latest_resume.id} as new default")
+                else:
+                    logger.info("No resumes left to set as default")
         except Exception as e:
             logger.error(f"Error deleting S3 file: {str(e)}")
             raise
-        
-        super().delete(*args, **kwargs)
-        logger.info(f"Deleted resume record: {self.id}")
 
     def __str__(self):
         return f"{self.title} ({self.user_profile.user.username})"

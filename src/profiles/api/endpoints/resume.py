@@ -1,24 +1,20 @@
 from typing import Dict, List
 from ninja import Router, File, Form, UploadedFile
-from ninja.security import django_auth
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from profiles.api.helpers.resume import (
-    check_profile_access,
+    validate_resume_file,
     create_or_update_resume,
     delete_resume_and_update_default,
-    get_profile_default_resume,
     set_resume_as_default,
-    validate_resume_file,
+    get_profile_default_resume
 )
-from profiles.models import UserProfile
+from profiles.models import Resume
 from profiles.api.schemas.resume import ResumeCreate, ResumeResponse
-from profiles.models.resume import Resume
 from profiles.utils.logger.logging_config import logger
 from asgiref.sync import sync_to_async
-from functools import partial
-
+from profiles.api.helpers.auth import check_auth_and_access
 
 router = Router()
 
@@ -32,24 +28,8 @@ async def upload_resume(
     """Upload or update a new resume"""
     logger.info(f"Starting resume upload for file: {file.name}")
     
-    # Check authentication
-    is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
-    if not is_authenticated:
-        raise PermissionDenied("Authentication required")
-    
     try:
-        # Get profile and user asynchronously
-        get_profile = sync_to_async(get_object_or_404)
-        profile = await get_profile(UserProfile, id=profile_id)
-        user = await sync_to_async(lambda: request.user)()
-        
-        # Get profile's user ID asynchronously
-        get_profile_user = sync_to_async(lambda p: p.user.id)
-        profile_user_id = await get_profile_user(profile)
-        
-        # Check if user owns this profile
-        if profile_user_id != user.id:
-            raise PermissionDenied("You don't have permission to upload to this profile")
+        profile = await check_auth_and_access(request, profile_id)
         
         # Validate file
         await validate_resume_file(file)
@@ -73,24 +53,8 @@ async def list_resumes(request, profile_id: int):
     """List all resumes for a profile"""
     logger.info(f"Fetching resumes for profile: {profile_id}")
     
-    # Check authentication
-    is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
-    if not is_authenticated:
-        raise PermissionDenied("Authentication required")
-    
     try:
-        # Get profile and user asynchronously
-        get_profile = sync_to_async(get_object_or_404)
-        profile = await get_profile(UserProfile, id=profile_id)
-        user = await sync_to_async(lambda: request.user)()
-        
-        # Get profile's user ID asynchronously
-        get_profile_user = sync_to_async(lambda p: p.user.id)
-        profile_user_id = await get_profile_user(profile)
-        
-        # Check if user owns this profile
-        if profile_user_id != user.id:
-            raise PermissionDenied("You don't have permission to view these resumes")
+        profile = await check_auth_and_access(request, profile_id)
         
         # Get resumes asynchronously
         get_resumes = sync_to_async(lambda: list(
@@ -107,24 +71,8 @@ async def list_resumes(request, profile_id: int):
 @router.get("/{profile_id}/resumes/default", response=ResumeResponse)
 async def get_default_resume(request, profile_id: int):
     """Get the default resume"""
-    # Check authentication
-    is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
-    if not is_authenticated:
-        raise PermissionDenied("Authentication required")
-    
     try:
-        # Get profile and user asynchronously
-        get_profile = sync_to_async(get_object_or_404)
-        profile = await get_profile(UserProfile, id=profile_id)
-        user = await sync_to_async(lambda: request.user)()
-        
-        # Get profile's user ID asynchronously
-        get_profile_user = sync_to_async(lambda p: p.user.id)
-        profile_user_id = await get_profile_user(profile)
-        
-        # Check if user owns this profile
-        if profile_user_id != user.id:
-            raise PermissionDenied("You don't have permission to view this resume")
+        await check_auth_and_access(request, profile_id)
         
         resume = await get_profile_default_resume(profile_id)
         if not resume:
@@ -140,24 +88,8 @@ async def get_resume(request, profile_id: int, resume_id: int):
     """Get specific resume details"""
     logger.info(f"Fetching resume {resume_id} for profile: {profile_id}")
     
-    # Check authentication
-    is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
-    if not is_authenticated:
-        raise PermissionDenied("Authentication required")
-    
     try:
-        # Get profile and user asynchronously
-        get_profile = sync_to_async(get_object_or_404)
-        profile = await get_profile(UserProfile, id=profile_id)
-        user = await sync_to_async(lambda: request.user)()
-        
-        # Get profile's user ID asynchronously
-        get_profile_user = sync_to_async(lambda p: p.user.id)
-        profile_user_id = await get_profile_user(profile)
-        
-        # Check if user owns this profile
-        if profile_user_id != user.id:
-            raise PermissionDenied("You don't have permission to view this resume")
+        profile = await check_auth_and_access(request, profile_id)
         
         # Get resume asynchronously
         get_resume = sync_to_async(get_object_or_404)
@@ -174,27 +106,11 @@ async def delete_resume(request, profile_id: int, resume_id: int):
     """Delete a specific resume and handle default resume logic"""
     logger.info(f"Processing delete request for resume {resume_id}")
     
-    # Check authentication
-    is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
-    if not is_authenticated:
-        raise PermissionDenied("Authentication required")
-    
     try:
-        # Get profile and user asynchronously
-        get_profile = sync_to_async(get_object_or_404)
-        profile = await get_profile(UserProfile, id=profile_id)
-        user = await sync_to_async(lambda: request.user)()
-        
-        # Get profile's user ID asynchronously
-        get_profile_user = sync_to_async(lambda p: p.user.id)
-        profile_user_id = await get_profile_user(profile)
-        
-        # Check if user owns this profile
-        if profile_user_id != user.id:
-            raise PermissionDenied("You don't have permission to delete this resume")
+        await check_auth_and_access(request, profile_id)
         
         # Delete resume and handle default logic
-        result = await sync_to_async(delete_resume_and_update_default)(profile_id, resume_id)
+        result = await delete_resume_and_update_default(profile_id, resume_id)
         return result
     except Exception as e:
         logger.error(f"Error deleting resume {resume_id}: {str(e)}")
@@ -204,24 +120,8 @@ async def delete_resume(request, profile_id: int, resume_id: int):
 @router.put("/{profile_id}/resumes/{resume_id}/set-default", response=ResumeResponse)
 async def set_default_resume(request, profile_id: int, resume_id: int):
     """Set a specific resume as default"""
-    # Check authentication
-    is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
-    if not is_authenticated:
-        raise PermissionDenied("Authentication required")
-    
     try:
-        # Get profile and user asynchronously
-        get_profile = sync_to_async(get_object_or_404)
-        profile = await get_profile(UserProfile, id=profile_id)
-        user = await sync_to_async(lambda: request.user)()
-        
-        # Get profile's user ID asynchronously
-        get_profile_user = sync_to_async(lambda p: p.user.id)
-        profile_user_id = await get_profile_user(profile)
-        
-        # Check if user owns this profile
-        if profile_user_id != user.id:
-            raise PermissionDenied("You don't have permission to modify this resume")
+        await check_auth_and_access(request, profile_id)
         
         resume = await set_resume_as_default(profile_id, resume_id)
         return ResumeResponse.from_orm(resume)
