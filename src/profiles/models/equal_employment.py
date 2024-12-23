@@ -1,60 +1,118 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 from profiles.models import UserProfile
 
 class EqualEmploymentData(models.Model):
     ETHNICITY_CHOICES = [
-        ('Hispanic or Latino', 'Hispanic or Latino'),
-        ('White (Not Hispanic or Latino)', 'White (Not Hispanic or Latino)'),
-        ('Black or African American (Not Hispanic or Latino)', 'Black or African American (Not Hispanic or Latino)'),
-        ('Native American or Alaska Native (Not Hispanic or Latino)', 'Native American or Alaska Native (Not Hispanic or Latino)'),
-        ('Asian (Not Hispanic or Latino)', 'Asian (Not Hispanic or Latino)'),
-        ('Native Hawaiian or Other Pacific Islander (Not Hispanic or Latino)', 
-         'Native Hawaiian or Other Pacific Islander (Not Hispanic or Latino)'),
-        ('Two or More Races (Not Hispanic or Latino)', 'Two or More Races (Not Hispanic or Latino)'),
-        ('Decline to self-identify', 'Decline to self-identify')
+        ('Black/African American', 'Black/African American'),
+        ('East Asian', 'East Asian'),
+        ('South Asian', 'South Asian'),
+        ('Hispanic/Latinx', 'Hispanic/Latinx'),
+        ('Southeast Asian', 'Southeast Asian'),
+        ('Middle Eastern', 'Middle Eastern'),
+        ('African', 'African'),
+        ('Native American/Alaskan', 'Native American/Alaskan'),
+        ('Native Hawaiian/Other Pacific Islander', 'Native Hawaiian/Other Pacific Islander'),
+        ('White', 'White'),
     ]
     
     GENDER_CHOICES = [
         ('Male', 'Male'),
         ('Female', 'Female'),
         ('Non-Binary', 'Non-Binary'),
-        ('Transgender', 'Transgender'),
-        ('Other', 'Other'),
-        ('Decline to self-identify', 'Decline to self-identify')
+        ('Decline to state', 'Decline to state')
     ]
     
-    VETERAN_STATUS_CHOICES = [
-        ('I am not a protected veteran', 'I am not a protected veteran'),
-        ('I identify as one or more of the classifications of protected veteran', 
-         'I identify as one or more of the classifications of protected veteran'),
-        ('Decline to self-identify', 'Decline to self-identify')
+    YES_NO_CHOICES = [
+        ('Yes', 'Yes'),
+        ('No', 'No')
+    ]
+    
+    YES_NO_DECLINE_CHOICES = [
+        ('Yes', 'Yes'),
+        ('No', 'No'),
+        ('Decline to state', 'Decline to state')
     ]
     
     user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='equal_employment_data')
     
+    # Work Authorization
+    authorized_us = models.CharField(
+        max_length=3,
+        choices=YES_NO_CHOICES,
+        verbose_name="Are you authorized to work in the US?",
+        blank=True,
+        null=True
+    )
+    authorized_canada = models.CharField(
+        max_length=3,
+        choices=YES_NO_CHOICES,
+        verbose_name="Are you authorized to work in Canada?",
+        blank=True,
+        null=True
+    )
+    authorized_uk = models.CharField(
+        max_length=3,
+        choices=YES_NO_CHOICES,
+        verbose_name="Are you authorized to work in the United Kingdom?",
+        blank=True,
+        null=True
+    )
+    requires_sponsorship = models.CharField(
+        max_length=3,
+        choices=YES_NO_CHOICES,
+        verbose_name="Will you now or in the future require sponsorship for employment visa status?",
+        blank=True,
+        null=True
+    )
+    
     # Demographics
-    ethnicity = models.CharField(max_length=100, choices=ETHNICITY_CHOICES)
-    gender = models.CharField(max_length=50, choices=GENDER_CHOICES)
+    ethnicities = ArrayField(
+        models.CharField(max_length=100, choices=ETHNICITY_CHOICES),
+        blank=True,
+        default=list,
+        verbose_name="What is your ethnicity? (Select all that apply)"
+    )
+    is_hispanic_latinx = models.BooleanField(
+        default=False,
+        editable=False,  # This field is auto-populated
+        verbose_name="Hispanic/Latinx"
+    )
+    gender = models.CharField(
+        max_length=20,
+        choices=GENDER_CHOICES,
+        verbose_name="What is your gender?",
+        blank=True,
+        null=True
+    )
     
-    # Employment Eligibility
-    is_authorized_to_work = models.BooleanField(
-        verbose_name="Are you legally authorized to work in the United States?"
+    # Additional Information
+    has_disability = models.CharField(
+        max_length=20,
+        choices=YES_NO_DECLINE_CHOICES,
+        verbose_name="Do you have a disability?",
+        blank=True,
+        null=True
     )
-    will_require_sponsorship = models.BooleanField(
-        verbose_name="Will you now or in the future require sponsorship for employment visa status?"
+    is_lgbtq = models.CharField(
+        max_length=20,
+        choices=YES_NO_DECLINE_CHOICES,
+        verbose_name="Do you identify as LGBTQ+?",
+        blank=True,
+        null=True
+    )
+    is_veteran = models.CharField(
+        max_length=20,
+        choices=YES_NO_DECLINE_CHOICES,
+        verbose_name="Are you a veteran?",
+        blank=True,
+        null=True
     )
     
-    # Protected Status
-    has_disability = models.BooleanField(
-        verbose_name="Do you have a disability as defined by the Americans with Disabilities Act?",
-        null=True,
-        blank=True
-    )
-    veteran_status = models.CharField(
-        max_length=100,
-        choices=VETERAN_STATUS_CHOICES,
-        verbose_name="Protected Veteran Status"
-    )
+    def save(self, *args, **kwargs):
+        # Auto-populate is_hispanic_latinx based on ethnicities
+        self.is_hispanic_latinx = 'Hispanic/Latinx' in self.ethnicities
+        super().save(*args, **kwargs)
     
     class Meta:
         verbose_name = "Equal Employment Data"

@@ -25,6 +25,7 @@ from profiles.api.endpoints.education import router as education_router
 from profiles.api.endpoints.work_experience import router as work_experience_router
 from profiles.api.endpoints.skill import router as skill_router
 from profiles.api.endpoints.social_link import router as social_link_router
+from profiles.api.endpoints.equal_employment import router as equal_employment_router
 
 api = NinjaAPI(
     title="FITB AI API",
@@ -46,6 +47,7 @@ api.add_router("/profiles/", education_router)
 api.add_router("/profiles/", work_experience_router)
 api.add_router("/profiles/", skill_router)
 api.add_router("/profiles/", social_link_router)
+api.add_router("/profiles/", equal_employment_router)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
