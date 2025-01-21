@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FITB AI</title>
+    <style>
+        body {
+            width: 300px;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+        }
+        .job-info {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .job-info div {
+            margin: 5px 0;
+        }
+        button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 5px;
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <div id="status" class="status">Looking for job application...</div>
+        <div id="jobInfo" class="job-info" style="display: none;">
+            <div id="company"></div>
+            <div id="title"></div>
+            <div id="location"></div>
+        </div>
+        <button id="autofillBtn" disabled>Autofill Application</button>
+    </div>
+    <script type="module" src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Icons</title>
+</head>
+<body>
+    <canvas id="canvas16" width="16" height="16"></canvas>
+    <canvas id="canvas48" width="48" height="48"></canvas>
+    <canvas id="canvas128" width="128" height="128"></canvas>
+
+    <script>
+        function generateIcon(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Fill with a blue color
+            ctx.fillStyle = '#4285f4';
+            ctx.fillRect(0, 0, canvas.width, canvas.width);
+            
+            // Add white text
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Adjust font size based on canvas size
+            const fontSize = canvas.width * 0.5;
+            ctx.font = `bold ${fontSize}px Arial`;
+            
+            // Add "F" in the center
+            ctx.fillText('F', canvas.width/2, canvas.height/2);
+            
+            // Download link
+            const link = document.createElement('a');
+            link.download = `icon${canvas.width}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Generate all sizes
+        generateIcon('canvas16');
+        generateIcon('canvas48');
+        generateIcon('canvas128');
+    </script>
+</body>
+</html>
