@@ -15,23 +15,25 @@
     ],
   
     "background": {
-      "service_worker": "background/background.js"
+      "service_worker": "background/background.js",
+      "type": "module"
     },
   
     "content_scripts": [
       {
         "matches": ["https://jobs.lever.co/*"],
-        "js": [
-          "autofill/sites.js",
-          "autofill/parsers/lever.js",
-          "content/content.js"
-        ]
+        "js": ["content/content.js"]
       }
     ],
   
     "web_accessible_resources": [{
-      "resources": ["autofill/*.js", "autofill/parsers/*.js"],
-      "matches": ["https://jobs.lever.co/*"]
+      "resources": [
+        "content/content_main.js",
+        "popup/popup_main.js",
+        "autofill/sites/*.js",
+        "autofill/sites/*/*.js"
+      ],
+      "matches": ["<all_urls>"]
     }],
   
     "action": {
@@ -48,4 +50,4 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
-  }
+}

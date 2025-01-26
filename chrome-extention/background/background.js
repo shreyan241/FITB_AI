@@ -1,22 +1,19 @@
-// Listen for tab URL changes
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    if (changeInfo.url && isJobSite(changeInfo.url)) {
-        console.log('Detected job site:', changeInfo.url);
-        const jobInfo = parseJobInfo(changeInfo.url);
-        if (jobInfo) {
-            // Notify popup if it's open
-            chrome.runtime.sendMessage({
-                action: 'jobSiteDetected',
-                jobInfo: jobInfo
+    if (changeInfo.url) {
+        console.log('urlChanged', changeInfo.url);
+        
+        // Only try to send message if the page is complete
+        if (tab.status === 'complete') {
+            chrome.tabs.sendMessage(tabId, {
+                action: 'urlChanged',
+                url: changeInfo.url
+            }).then(response => {
+                if (response?.status === 'handled') {
+                    console.log('Content script processed URL change');
+                }
+            }).catch(error => {
+                console.log('Could not send message to content script (not loaded yet)');
             });
         }
-    }
-});
-
-// Listen for messages
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'isJobSite') {
-        const url = sender.tab.url;
-        sendResponse({ isJobSite: isJobSite(url) });
     }
 });
