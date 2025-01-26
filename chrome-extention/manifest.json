@@ -28,8 +28,8 @@
   
     "web_accessible_resources": [{
       "resources": [
-        "content/content_main.js",
-        "popup/popup_main.js",
+        "content/*.js",
+        "popup/*.js",
         "autofill/sites/*.js",
         "autofill/sites/*/*.js"
       ],
