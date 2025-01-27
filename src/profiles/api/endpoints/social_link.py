@@ -12,7 +12,7 @@ from profiles.api.helpers.social_link import (
     get_social_link,
     get_profile_social_links
 )
-from profiles.api.helpers.auth import check_auth_and_access
+from profiles.api.helpers.auth import get_profile_with_auth_check
 from profiles.utils.logger.logging_config import logger
 
 router = Router(tags=["social-links"])
@@ -30,7 +30,7 @@ async def list_social_links(request, profile_id: int):
     """List all social links for a profile"""
     try:
         # Check authentication and access
-        profile = await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "view social links for")
         
         # Get social links
         social_links = await get_profile_social_links(profile_id)
@@ -44,7 +44,7 @@ async def get_social_link_by_id(request, profile_id: int, link_id: int):
     """Get a specific social link"""
     try:
         # Check authentication and access
-        await check_auth_and_access(request, profile_id)
+        await get_profile_with_auth_check(request, profile_id, "view social links for")
         
         # Get social link
         social_link = await get_social_link(link_id)
@@ -63,7 +63,7 @@ async def create_social_link_endpoint(request, profile_id: int, data: SocialLink
     """Create a new social link"""
     try:
         # Check authentication and access
-        profile = await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "add social links to")
         
         # Create social link
         social_link = await create_social_link(
@@ -82,7 +82,7 @@ async def update_social_link_endpoint(request, profile_id: int, link_id: int, da
     """Update a social link"""
     try:
         # Check authentication and access
-        await check_auth_and_access(request, profile_id)
+        await get_profile_with_auth_check(request, profile_id, "update social links for")
         
         # Get existing link to verify ownership
         existing_link = await get_social_link(link_id)
@@ -106,7 +106,7 @@ async def delete_social_link_endpoint(request, profile_id: int, link_id: int):
     """Delete a social link"""
     try:
         # Check authentication and access
-        await check_auth_and_access(request, profile_id)
+        await get_profile_with_auth_check(request, profile_id, "delete social links from")
         
         # Get existing link to verify ownership
         existing_link = await get_social_link(link_id)

@@ -15,7 +15,7 @@ from profiles.api.helpers.education import (
 )
 from profiles.models import Education
 from profiles.utils.logger.logging_config import logger
-from profiles.api.helpers.auth import check_auth_and_access
+from profiles.api.helpers.auth import get_profile_with_auth_check
 from asgiref.sync import sync_to_async
 
 router = Router(tags=["education"])
@@ -26,7 +26,7 @@ async def list_education(request, profile_id: int):
     logger.info(f"Fetching education entries for profile: {profile_id}")
     
     try:
-        profile = await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "view education for")
         education_list = await get_education_list(profile)
         return [EducationResponse.from_orm(edu) for edu in education_list]
     except Exception as e:
@@ -39,7 +39,7 @@ async def get_education(request, profile_id: int, education_id: int):
     logger.info(f"Fetching education entry {education_id} for profile: {profile_id}")
     
     try:
-        await check_auth_and_access(request, profile_id)
+        await get_profile_with_auth_check(request, profile_id, "view education for")
         
         # Get education entry asynchronously
         get_education = sync_to_async(get_object_or_404)
@@ -59,7 +59,7 @@ async def add_education(request, profile_id: int, data: EducationCreate):
         # Validate dates
         data.validate_dates()
         
-        profile = await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "add education to")
         education = await create_education(profile, data)
         return EducationResponse.from_orm(education)
     except ValueError as e:
@@ -80,7 +80,7 @@ async def update_education_entry(
     logger.info(f"Updating education entry {education_id} for profile: {profile_id}")
     
     try:
-        await check_auth_and_access(request, profile_id)
+        await get_profile_with_auth_check(request, profile_id, "update education for")
         education = await update_education(profile_id, education_id, data)
         return EducationResponse.from_orm(education)
     except Exception as e:
@@ -93,7 +93,7 @@ async def delete_education_entry(request, profile_id: int, education_id: int):
     logger.info(f"Deleting education entry {education_id} for profile: {profile_id}")
     
     try:
-        await check_auth_and_access(request, profile_id)
+        await get_profile_with_auth_check(request, profile_id, "delete education from")
         result = await delete_education(profile_id, education_id)
         return result
     except Exception as e:

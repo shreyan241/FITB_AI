@@ -3,45 +3,19 @@ from django.shortcuts import get_object_or_404
 from asgiref.sync import sync_to_async
 from profiles.models import UserProfile
 from profiles.utils.logger.logging_config import logger
+from ninja.security import HttpBearer
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
-async def check_auth_and_access(request, profile_id: int):
-    """
-    Check if user is authenticated and has access to the profile.
-    Returns the profile if access is granted, raises PermissionDenied otherwise.
-    
-    Args:
-        request: The HTTP request object
-        profile_id: The ID of the profile to check access for
-        
-    Returns:
-        UserProfile: The requested profile if access is granted
-        
-    Raises:
-        PermissionDenied: If user is not authenticated or doesn't have access
-    """
-    # Check authentication
-    is_authenticated = await sync_to_async(lambda: request.user.is_authenticated)()
-    if not is_authenticated:
-        raise PermissionDenied("Authentication required")
-    
-    # Get profile
-    get_profile = sync_to_async(get_object_or_404)
-    profile = await get_profile(UserProfile, id=profile_id)
-    
-    # Check if user is superuser
-    is_superuser = await sync_to_async(lambda: request.user.is_superuser)()
-    if is_superuser:
-        return profile
-    
-    # Get user's profile ID
-    get_user_profile = sync_to_async(lambda: getattr(request.user, 'profile', None))
-    user_profile = await get_user_profile()
-    
-    if not user_profile or user_profile.id != profile_id:
-        logger.warning(f"Unauthorized access attempt to profile {profile_id} by user {request.user.id}")
-        raise PermissionDenied("You don't have permission to access this profile")
-    
-    return profile
+class GlobalAuth(HttpBearer):
+    async def authenticate(self, request, token):
+        try:
+            # Verify token and get user
+            user = await sync_to_async(User.objects.get)(auth_token__key=token)
+            request.user = user  # Attach user to request
+            return user
+        except User.DoesNotExist:
+            return None
 
 async def check_auth_and_staff(request):
     """
@@ -63,4 +37,30 @@ async def check_auth_and_staff(request):
     is_staff = await sync_to_async(lambda: request.user.is_staff)()
     if not is_staff:
         logger.warning(f"Non-staff access attempt by user {request.user.id}")
-        raise PermissionDenied("Staff access required") 
+        raise PermissionDenied("Staff access required")
+
+async def get_profile_with_auth_check(request, profile_id: int, action: str = "access") -> UserProfile:
+    """
+    Get profile and check if the user has permission to access it.
+    Args:
+        request: The request object containing auth user
+        profile_id: The ID of the profile to check
+        action: The action being performed (for error message)
+    Returns:
+        UserProfile: The profile if access is allowed
+    Raises:
+        ValidationError: If profile not found or user doesn't have permission
+    """
+    try:
+        profile = await UserProfile.objects.select_related('user').aget(id=profile_id)
+        
+        # Check permissions
+        is_superuser = await sync_to_async(lambda: request.user.is_superuser)()
+        profile_user = await sync_to_async(lambda: profile.user)()
+        
+        if not (is_superuser or profile_user == request.user):
+            raise ValidationError(f"You don't have permission to {action} this profile")
+            
+        return profile
+    except UserProfile.DoesNotExist:
+        raise ValidationError("Profile not found") 

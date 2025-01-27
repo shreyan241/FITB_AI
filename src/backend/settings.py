@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Third party apps
-    'storages',       # For S3
+    'storages',     # For S3
+    'rest_framework',
+    'rest_framework.authtoken',
     # Local apps
     'profiles.apps.ProfilesConfig',
 ]

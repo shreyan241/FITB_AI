@@ -16,7 +16,7 @@ from profiles.api.helpers.skill import (
     get_all_skills,
     update_profile_skills
 )
-from profiles.api.helpers.auth import check_auth_and_access, check_auth_and_staff
+from profiles.api.helpers.auth import check_auth_and_access, check_auth_and_staff, get_profile_with_auth_check
 from asgiref.sync import sync_to_async
 from profiles.utils.logger.logging_config import logger
 from django.db.models import Q
@@ -142,7 +142,7 @@ async def delete_skill_by_id(request, skill_id: int):
 async def get_profile_skills(request, profile_id: int):
     """Get skills for a specific profile"""
     try:
-        profile = await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "view skills for")
         return [skill async for skill in profile.skills.all()]
     except Exception as e:
         logger.error(f"Error getting profile skills: {str(e)}")
@@ -152,7 +152,7 @@ async def get_profile_skills(request, profile_id: int):
 async def update_profile_skills_endpoint(request, profile_id: int, data: ProfileSkillsUpdate):
     """Update skills for a specific profile"""
     try:
-        profile = await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "update skills for")
         await update_profile_skills(profile, data.skill_ids)
         return {"success": True}
     except Exception as e:
