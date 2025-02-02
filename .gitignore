@@ -180,3 +180,6 @@ logs/
 # Docker
 docker/docker-compose.yml
 docker/postgres-data/
+
+# Cursor
+.cursor
