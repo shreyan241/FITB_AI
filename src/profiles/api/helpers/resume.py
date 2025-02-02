@@ -6,7 +6,6 @@ from django.db import transaction
 from profiles.models import Resume
 from profiles.models.resume import MAX_RESUMES_PER_USER
 from profiles.api.schemas.resume import MAX_FILE_SIZE, ALLOWED_EXTENSIONS
-from profiles.models.user_profile import UserProfile
 from profiles.utils.logger.logging_config import logger
 from asgiref.sync import sync_to_async
 from uuid import uuid4

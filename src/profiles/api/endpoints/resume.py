@@ -14,7 +14,7 @@ from profiles.models import Resume
 from profiles.api.schemas.resume import ResumeCreate, ResumeResponse
 from profiles.utils.logger.logging_config import logger
 from asgiref.sync import sync_to_async
-from profiles.api.helpers.auth import check_auth_and_access
+from profiles.api.helpers.auth import get_profile_with_auth_check
 from profiles.utils.storage.resume_storage import ResumeStorage
 import mimetypes
 
@@ -31,13 +31,14 @@ async def upload_resume(
     logger.info(f"Starting resume upload for file: {file.name}")
     
     try:
-        profile = await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "upload resume")
         
         # Validate file
         await validate_resume_file(file)
         
         # Create resume
         data = ResumeCreate(title=title)
+
         resume = await create_or_update_resume(profile, data.title, file)
         logger.info(f"Successfully uploaded resume: {resume.id}")
         return ResumeResponse.from_orm(resume)
@@ -56,7 +57,7 @@ async def list_resumes(request, profile_id: int):
     logger.info(f"Fetching resumes for profile: {profile_id}")
     
     try:
-        profile = await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "view resumes")
         
         # Get resumes asynchronously
         get_resumes = sync_to_async(lambda: list(
@@ -74,8 +75,9 @@ async def list_resumes(request, profile_id: int):
 async def get_default_resume(request, profile_id: int):
     """Get the default resume"""
     try:
-        await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "view resumes")
         
+
         resume = await get_profile_default_resume(profile_id)
         if not resume:
             raise Http404("No resume found for this profile")
@@ -91,12 +93,13 @@ async def get_resume(request, profile_id: int, resume_id: int):
     logger.info(f"Fetching resume {resume_id} for profile: {profile_id}")
     
     try:
-        profile = await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "view resumes")
         
         # Get resume asynchronously
         get_resume = sync_to_async(get_object_or_404)
         resume = await get_resume(Resume, id=resume_id, user_profile_id=profile_id)
         
+
         return ResumeResponse.from_orm(resume)
     except Exception as e:
         logger.error(f"Error fetching resume: {str(e)}")
@@ -109,8 +112,9 @@ async def delete_resume(request, profile_id: int, resume_id: int):
     logger.info(f"Processing delete request for resume {resume_id}")
     
     try:
-        await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "delete resume")
         
+
         # Delete resume and handle default logic
         result = await delete_resume_and_update_default(profile_id, resume_id)
         return result
@@ -123,8 +127,9 @@ async def delete_resume(request, profile_id: int, resume_id: int):
 async def set_default_resume(request, profile_id: int, resume_id: int):
     """Set a specific resume as default"""
     try:
-        await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "set default resume")
         
+
         resume = await set_resume_as_default(profile_id, resume_id)
         return ResumeResponse.from_orm(resume)
     except Exception as e:
@@ -137,8 +142,9 @@ async def download_resume(request, profile_id: int, resume_id: int):
     """Download a specific resume file"""
     try:
         # Check authentication and access
-        await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "download resumes")
         
+
         # Get the resume
         resume = await sync_to_async(
             lambda: Resume.objects.select_related('user_profile').get(
@@ -181,8 +187,9 @@ async def preview_resume(request, profile_id: int, resume_id: int):
     """Get a preview/thumbnail of a resume"""
     try:
         # Check authentication and access
-        await check_auth_and_access(request, profile_id)
+        profile = await get_profile_with_auth_check(request, profile_id, "preview resumes")
         
+
         # Get the resume
         resume = await sync_to_async(
             lambda: Resume.objects.select_related('user_profile').get(

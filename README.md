@@ -39,7 +39,7 @@ FITB AI streamlines the job application process by automatically filling out app
 - Add error handling
 
 ### Priority 3: AI Content Generation
-- RAG pipeline using deepseek-coder-1.3b
+- RAG pipeline using deepseek-r1
 - Cover letter generation using resume + job description
 - Answer generation for subjective questions
 - Company research integration

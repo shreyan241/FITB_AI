@@ -16,7 +16,7 @@ from profiles.api.helpers.skill import (
     get_all_skills,
     update_profile_skills
 )
-from profiles.api.helpers.auth import check_auth_and_access, check_auth_and_staff, get_profile_with_auth_check
+from profiles.api.helpers.auth import  check_auth_and_staff, get_profile_with_auth_check
 from asgiref.sync import sync_to_async
 from profiles.utils.logger.logging_config import logger
 from django.db.models import Q
