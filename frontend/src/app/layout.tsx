@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/providers/theme";
 import LandingNavbar from "@/components/navbar/LandingNavbar";
 import "./globals.css";
 import { Inter } from 'next/font/google';
+import { Providers } from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,16 +31,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} ${inter.className}`}>
-        <ThemeProvider>
-          <LandingNavbar />
-          <main style={{ 
-            paddingTop: '64px',
-            minHeight: '100vh',
-            transition: 'background-color 0.3s ease-in-out'
-          }}>
-            {children}
-          </main>
-        </ThemeProvider>
+        <Providers>
+            <ThemeProvider>
+              <LandingNavbar />
+              <main style={{ 
+                paddingTop: '64px',
+                minHeight: '100vh',
+                transition: 'background-color 0.3s ease-in-out'
+              }}>
+                {children}
+              </main>
+            </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );
