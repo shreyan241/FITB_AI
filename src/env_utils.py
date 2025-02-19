@@ -25,3 +25,7 @@ AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
 # Django settings
 DJANGO_SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DJANGO_DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
+
+# Auth0 Settings
+AUTH0_DOMAIN = os.getenv('AUTH0_DOMAIN')
+AUTH0_AUDIENCE = os.getenv('AUTH0_AUDIENCE')

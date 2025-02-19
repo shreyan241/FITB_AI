@@ -101,4 +101,4 @@ class Resume(models.Model):
             raise
 
     def __str__(self):
-        return f"{self.title} ({self.user_profile.user.username})"
+        return f"{self.title} ({self.user_profile.user.email})"

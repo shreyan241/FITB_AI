@@ -1,30 +1,56 @@
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from asgiref.sync import sync_to_async
-from profiles.models import UserProfile
+from profiles.models import UserProfile, CustomUser
 from profiles.utils.logger.logging_config import logger
 from ninja.security import HttpBearer
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from jose.exceptions import ExpiredSignatureError
+from profiles.api.helpers.auth0 import verify_auth0_token, get_or_create_user_from_auth0
+from ninja.errors import HttpError
 
-class GlobalAuth(HttpBearer):
+class Auth0BearerAuth(HttpBearer):
     async def authenticate(self, request, token):
-        try:
-            # Verify token and get user
-            user = await sync_to_async(User.objects.get)(auth_token__key=token)
-            request.user = user  # Attach user to request
-            return user
-        except User.DoesNotExist:
+        """
+        Authenticate the request using Auth0 token.
+        Args:
+            request: The HTTP request
+            token: The Bearer token from the Authorization header
+        Returns:
+            CustomUser: The authenticated user
+        Raises:
+            HttpError: If authentication fails
+        """
+        if not token:
             return None
+            
+        try:
+            # Verify Auth0 token
+            auth0_user = await verify_auth0_token(token)
+            
+            # Get or create user from Auth0 data
+            user = await get_or_create_user_from_auth0(auth0_user)
+            
+            if not user.is_active:
+                raise HttpError(403, "User account is disabled")
+            
+            # Attach user to request
+            request.user = user
+            return user
+            
+        except ExpiredSignatureError:
+            raise HttpError(401, "Token has expired")
+        except ValueError as e:
+            raise HttpError(401, str(e))
+        except Exception as e:
+            logger.error(f"Authentication error: {str(e)}")
+            raise HttpError(401, "Invalid authentication credentials")
 
 async def check_auth_and_staff(request):
     """
     Check if user is authenticated and is staff.
-    Raises PermissionDenied if not authenticated or not staff.
-    
     Args:
         request: The HTTP request object
-        
     Raises:
         PermissionDenied: If user is not authenticated or not staff
     """
@@ -51,6 +77,9 @@ async def get_profile_with_auth_check(request, profile_id: int, action: str = "a
     Raises:
         ValidationError: If profile not found or user doesn't have permission
     """
+    if not request.user.is_authenticated:
+        raise ValidationError("Authentication required")
+        
     try:
         profile = await UserProfile.objects.select_related('user').aget(id=profile_id)
         
@@ -59,6 +88,10 @@ async def get_profile_with_auth_check(request, profile_id: int, action: str = "a
         profile_user = await sync_to_async(lambda: profile.user)()
         
         if not (is_superuser or profile_user == request.user):
+            logger.warning(
+                f"Unauthorized profile access attempt: user {request.user.id} "
+                f"tried to {action} profile {profile_id}"
+            )
             raise ValidationError(f"You don't have permission to {action} this profile")
             
         return profile

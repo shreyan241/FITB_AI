@@ -1,11 +1,12 @@
 'use client';
 
-import { Box, Container } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import HeroSection from '@/components/landing/HeroSection';
 import FeatureGrid from '@/components/landing/FeatureGrid';
 import HowItWorks from '@/components/landing/HowItWorks';
 import CTASection from '@/components/landing/CTASection';
-import ProfileClient from './profile-client';
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <Box
@@ -15,9 +16,13 @@ export default function Home() {
         background: 'transparent',
       }}
     >
-      <a href="/api/auth/login">Login</a>
-      <a href="/api/auth/logout">Logout</a>
-      <ProfileClient />
+      <Box sx={{ position: 'fixed', top: 80, right: 20, zIndex: 1000 }}>
+        <Link href="/auth-test" passHref>
+          <Button variant="contained" color="primary">
+            Test Auth
+          </Button>
+        </Link>
+      </Box>
       <HeroSection />
       <FeatureGrid />
       <HowItWorks />

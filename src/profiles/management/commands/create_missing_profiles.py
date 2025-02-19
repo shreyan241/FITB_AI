@@ -1,13 +1,12 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
-from profiles.models import UserProfile
+from profiles.models import CustomUser, UserProfile
 from profiles.utils.logger.logging_config import logger
 
 class Command(BaseCommand):
     help = 'Create UserProfile for users that do not have one'
 
     def handle(self, *args, **options):
-        users_without_profiles = User.objects.filter(userprofile__isnull=True)
+        users_without_profiles = CustomUser.objects.filter(userprofile__isnull=True)
         count = users_without_profiles.count()
         
         if count == 0:
@@ -20,9 +19,9 @@ class Command(BaseCommand):
             try:
                 UserProfile.objects.create(user=user)
                 logger.info(f"Created profile for user {user.id}")
-                self.stdout.write(self.style.SUCCESS(f'Created profile for {user.username}'))
+                self.stdout.write(self.style.SUCCESS(f'Created profile for {user.email}'))
             except Exception as e:
                 logger.error(f"Error creating profile for user {user.id}: {str(e)}")
                 self.stdout.write(
-                    self.style.ERROR(f'Failed to create profile for {user.username}: {str(e)}')
+                    self.style.ERROR(f'Failed to create profile for {user.email}: {str(e)}')
                 ) 

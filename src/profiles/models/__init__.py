@@ -1,3 +1,4 @@
+from .custom_user import CustomUser
 from .user_profile import UserProfile
 from .education import Education
 from .work_experience import WorkExperience
@@ -7,6 +8,7 @@ from .skill import Skill
 from .resume import Resume
 
 __all__ = [
+    'CustomUser',
     'UserProfile',
     'Resume',
     'Education',

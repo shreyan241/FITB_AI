@@ -1,49 +1,55 @@
-from ninja import Router, Form
+from ninja import Router
 from ninja.errors import HttpError
-from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
-from profiles.api.schemas.auth import UserRegistrationSchema
+from profiles.api.helpers.auth0 import verify_auth0_token, get_or_create_user_from_auth0, normalize_url
+from profiles.api.schemas.auth import Auth0TokenSchema, UserResponse
+from profiles.utils.logger.logging_config import logger
+import httpx
+from django.conf import settings
 
 router = Router(tags=["auth"])
 
-@router.post("/register", auth=None)
-def register_user(request, data: UserRegistrationSchema):
-    """Register a new user and return their auth token"""
+@router.post("/auth0/verify", auth=None, response=UserResponse)
+async def verify_auth0_user(request, data: Auth0TokenSchema):
+    """Verify Auth0 token and get or create user"""
     try:
-        # First check if user exists
-        if User.objects.filter(username=data.username).exists():
-            raise HttpError(400, "Username already exists")
+        # Verify the Auth0 token
+        auth0_token = await verify_auth0_token(data.token)
         
-        if User.objects.filter(email=data.email).exists():
-            raise HttpError(400, "Email already exists")
-            
-        # Create user only if doesn't exist
-        user = User.objects.create_user(
-            username=data.username,
-            email=data.email,
-            password=data.password,
-            first_name=data.first_name or "",
-            last_name=data.last_name or ""
+        # Construct and normalize the userinfo URL
+        userinfo_url = normalize_url(f"https://{settings.AUTH0_DOMAIN}/userinfo")
+        logger.info(f"Fetching userinfo from: {userinfo_url}")
+        
+        # Fetch userinfo using the token
+        try:
+            async with httpx.AsyncClient(trust_env=False) as client:
+                userinfo_response = await client.get(
+                    userinfo_url,
+                    headers={"Authorization": f"Bearer {data.token}"},
+                    timeout=10.0
+                )
+                userinfo_response.raise_for_status()
+                userinfo = userinfo_response.json()
+                logger.info("Successfully fetched userinfo")
+        except httpx.HTTPError as e:
+            logger.error(f"HTTP error fetching userinfo: {str(e)}")
+            raise HttpError(401, "Failed to fetch user info")
+        except Exception as e:
+            logger.error(f"Unexpected error fetching userinfo: {str(e)}")
+            raise HttpError(401, "Failed to fetch user info")
+        
+        # Get or create user from userinfo
+        user = await get_or_create_user_from_auth0(userinfo)
+        
+        return UserResponse(
+            id=user.id,
+            email=user.email,
+            first_name=user.first_name if hasattr(user, 'first_name') else None,
+            last_name=user.last_name if hasattr(user, 'last_name') else None,
+            is_verified=user.is_verified if hasattr(user, 'is_verified') else False,
+            auth0_id=user.auth0_id
         )
-        
-        # Create token
-        token, _ = Token.objects.get_or_create(user=user)
-        
-        return {
-            "message": "User registered successfully",
-            "token": str(token.key)
-        }
-    except HttpError:
-        raise  # Re-raise our custom errors
     except Exception as e:
-        raise HttpError(500, "Failed to register user")
-
-# Existing login endpoint
-@router.post("/token", auth=None)
-def get_token(request, username: str = Form(...), password: str = Form(...)):
-    user = authenticate(username=username, password=password)
-    if user:
-        token, _ = Token.objects.get_or_create(user=user)
-        return {"token": str(token.key)}
-    raise HttpError(401, "Invalid credentials")
+        logger.error(f"Error verifying Auth0 token: {str(e)}")
+        if isinstance(e, HttpError):
+            raise
+        raise HttpError(401, "Invalid Auth0 token")
