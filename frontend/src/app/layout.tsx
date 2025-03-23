@@ -5,6 +5,7 @@ import LandingNavbar from "@/components/navbar/LandingNavbar";
 import "./globals.css";
 import { Inter } from 'next/font/google';
 import { Providers } from "./providers";
+import { ReactScan } from "./react-scan";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <ReactScan />
       <body className={`${geistSans.variable} ${geistMono.variable} ${inter.className}`}>
         <Providers>
             <ThemeProvider>
