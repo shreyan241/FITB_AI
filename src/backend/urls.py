@@ -19,9 +19,6 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from ninja import NinjaAPI
-from ninja.errors import ValidationError
-from profiles.api.helpers.auth import Auth0BearerAuth
-from profiles.api.endpoints.auth import router as auth_router
 from profiles.api.endpoints.resume import router as resume_router
 from profiles.api.endpoints.profile import router as profile_router
 from profiles.api.endpoints.education import router as education_router
@@ -29,32 +26,15 @@ from profiles.api.endpoints.work_experience import router as work_experience_rou
 from profiles.api.endpoints.skill import router as skill_router
 from profiles.api.endpoints.social_link import router as social_link_router
 from profiles.api.endpoints.equal_employment import router as equal_employment_router
-from django.core.exceptions import PermissionDenied
 from profiles.utils.logger.logging_config import logger
-
-def custom_error_handler(request, exc):
-    """Custom error handler for API exceptions"""
-    if isinstance(exc, ValidationError):
-        return api.create_response(request, {"detail": str(exc)}, status=400)
-    elif isinstance(exc, PermissionDenied):
-        return api.create_response(request, {"detail": str(exc)}, status=403)
-    else:
-        logger.error(f"Unhandled exception: {str(exc)}")
-        return api.create_response(
-            request,
-            {"detail": "Internal server error"},
-            status=500
-        )
 
 api = NinjaAPI(
     title="FITB AI API",
     version="1.0.0",
     description="""
-    FITB AI Backend API with Auth0 authentication.
-    All endpoints require a valid Auth0 access token.
+    FITB AI Backend API.
     """,
     csrf=False,  # Disabled CSRF for API
-    auth=Auth0BearerAuth(),
     urls_namespace='api',
     docs_url='/docs/' if settings.DEBUG else None,
     openapi_url='/openapi.json' if settings.DEBUG else None,
@@ -68,7 +48,6 @@ api.add_router("/v1/profiles/", work_experience_router)
 api.add_router("/v1/profiles/", skill_router)
 api.add_router("/v1/profiles/", social_link_router)
 api.add_router("/v1/profiles/", equal_employment_router)
-api.add_router("/v1/auth/", auth_router)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
