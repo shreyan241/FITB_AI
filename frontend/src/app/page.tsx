@@ -2,9 +2,6 @@
 
 import { Box, Button } from '@mui/material';
 import HeroSection from '@/components/landing/HeroSection';
-import FeatureGrid from '@/components/landing/FeatureGrid';
-import HowItWorks from '@/components/landing/HowItWorks';
-import CTASection from '@/components/landing/CTASection';
 import Link from 'next/link';
 
 export default function Home() {
@@ -28,9 +25,6 @@ export default function Home() {
         </Button>
       </Box>
       <HeroSection />
-      <FeatureGrid />
-      <HowItWorks />
-      <CTASection />
     </Box>
   );
 }
