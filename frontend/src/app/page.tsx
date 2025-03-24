@@ -23,6 +23,16 @@ export default function Home() {
         >
           Login
         </Button>
+        <Button 
+          variant="contained" 
+          color="error"
+          onClick={() => {
+            window.location.href = "/api/auth/logout";
+          }}
+        >
+          Logout
+        </Button>
+    
       </Box>
       <HeroSection />
     </Box>
