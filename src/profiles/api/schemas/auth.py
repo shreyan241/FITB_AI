@@ -13,19 +13,3 @@ class UserResponse(Schema):
     last_name: Optional[str]
     is_verified: bool
     auth0_id: str
-
-class UserRegistrationSchema(Schema):
-    email: str
-    password: str
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-
-class TokenResponse(Schema):
-    token: str
-
-class MessageResponse(Schema):
-    message: str
-
-class TokenMessageResponse(Schema):
-    message: str
-    token: str

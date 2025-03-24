@@ -1,6 +1,5 @@
 import { Auth0TokenRequest } from '../requests/auth';
 import { UserResponse } from '../responses/auth';
-import { useUser } from '@auth0/nextjs-auth0/client';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_FITB_URL;
 

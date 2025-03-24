@@ -1,7 +1,6 @@
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import get_object_or_404
 from asgiref.sync import sync_to_async
-from profiles.models import UserProfile, CustomUser
+from profiles.models import UserProfile
 from profiles.utils.logger.logging_config import logger
 from ninja.security import HttpBearer
 from django.core.exceptions import ValidationError
