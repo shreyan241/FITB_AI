@@ -17,11 +17,15 @@ export default function Home() {
       }}
     >
       <Box sx={{ position: 'fixed', top: 80, right: 20, zIndex: 1000 }}>
-        <Link href="/auth-test" passHref>
-          <Button variant="contained" color="primary">
-            Test Auth
-          </Button>
-        </Link>
+        <Button 
+          variant="contained" 
+          color="primary"
+          onClick={() => {
+            window.location.href = "/api/auth/login";
+          }}
+        >
+          Login
+        </Button>
       </Box>
       <HeroSection />
       <FeatureGrid />
